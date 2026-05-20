@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 # Secure affiliate variables fallback tracking keys
 .env.local
+
+.vercel
+.env*.local
