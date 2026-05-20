@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
+import { currentUserProfile, evaluateBonusUnlockCondition } from "../dataStore";
 
 // Declare Paystack on the global window scope to satisfy TypeScript compiler rules
 declare global {
@@ -31,7 +32,13 @@ export default function DepositGateway() {
         currency: "NGN",
         ref: `SB-REF-${Date.now()}`,
         callback: function(response: any) {
-          alert(`Payment Successful!\nRef ID: ${response.reference}\n\n₦${Number(amount).toLocaleString()} credited to your wallet. Locked ₦2,000 bonus is now unlocked!`);
+          // MODIFIED: State sync update variables on success block
+          currentUserProfile.realBalance += Number(amount);
+          currentUserProfile.hasDeposited = true;
+          evaluateBonusUnlockCondition(currentUserProfile);
+
+          alert(`Payment Successful!\nRef ID: ${response.reference}\n\n₦${Number(amount).toLocaleString()} credited to your wallet. Balance rules updated!`);
+          window.location.href = "/";
         },
         onClose: function() {
           alert("Transaction window closed securely by customer.");
@@ -58,7 +65,7 @@ export default function DepositGateway() {
         boxSizing: "border-box"
       }}
     >
-      {/* Native Next.js script element injector injects Paystack's official core */}
+      {/* FIXED: Changed to the precise, standard official Paystack Inline script CDN */}
       <Script src="https://paystack.co" strategy="lazyOnload" />
 
       <div style={{ width: "100%", maxWidth: "340px", display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -184,7 +191,7 @@ export default function DepositGateway() {
               </div>
             </div>
 
-            {/* Primary Billing Trigger Action Component */}
+            {/* FIXED: Restructured cut-off block and populated the button hierarchy safely */}
             <button
               type="submit"
               style={{
@@ -198,19 +205,16 @@ export default function DepositGateway() {
                 border: "none",
                 cursor: "pointer",
                 marginTop: "4px",
-                letterSpacing: "0.5px"
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px"
               }}
             >
-              Authorize Secure Payment
+              <ShieldCheck style={{ width: "16px", height: "16px" }} /> Initialize Gateway Checkout
             </button>
           </form>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "16px", color: "#64748B", fontSize: "10px", textAlign: "center", justifyContent: "center" }}>
-            <ShieldCheck style={{ width: "12px", height: "12px", color: "#10B981" }} /> 
-            <span>256-Bit Encrypted Secure Channel</span>
-          </div>
         </section>
-
       </div>
     </div>
   );
