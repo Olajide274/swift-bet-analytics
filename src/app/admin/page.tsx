@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusCircle, ShieldAlert, Tag, Percent } from "lucide-react";
+import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound } from "lucide-react";
 import { addBettingTip } from "../dataStore";
 
 export default function AdminInputForm() {
@@ -10,16 +10,19 @@ export default function AdminInputForm() {
   const [odds, setOdds] = useState("");
   const [prediction, setPrediction] = useState("");
   const [bookmaker, setBookmaker] = useState<"sportybet" | "bet9ja">("sportybet");
+  // NEW: State to hold the slip's bookmaker reference code
+  const [bookingCode, setBookingCode] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Save the new tip data straight into our shared memory dataStore
+    // FIXED: Now passing 'bookingCode' to satisfy the updated dataStore interface criteria
     addBettingTip({
       fixture,
       odds,
       prediction,
       bookmaker,
+      bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
     });
 
     alert(`Successfully Published:\n${fixture} listed on ${bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"}`);
@@ -28,6 +31,7 @@ export default function AdminInputForm() {
     setFixture("");
     setOdds("");
     setPrediction("");
+    setBookingCode(""); // Clear code input
   };
 
   return (
@@ -103,6 +107,24 @@ export default function AdminInputForm() {
               value={prediction}
               onChange={(e) => setPrediction(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
+            />
+          </div>
+        </div>
+
+        {/* NEW: Input Field Box matching your exact Tailwind styling metrics */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Booking Code
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-2.5 text-xs text-slate-500"><KeyRound className="w-3.5 h-3.5"/></span>
+            <input
+              type="text"
+              required
+              placeholder="e.g., BC55-XYZ7"
+              value={bookingCode}
+              onChange={(e) => setBookingCode(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition uppercase"
             />
           </div>
         </div>
