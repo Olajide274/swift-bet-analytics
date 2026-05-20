@@ -42,19 +42,13 @@ export default function Dashboard() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#0B0F19", color: "#FFFFFF", paddingBottom: "80px", boxSizing: "border-box" }}>
       
-      {/* Account Settings Side Drawer Menu Overlay */}
+      {/* Drawer Overlay Settings */}
       {isMenuOpen && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100vh", backgroundColor: "rgba(11, 15, 25, 0.95)", zIndex: 100, padding: "24px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
               <span style={{ fontSize: "14px", fontWeight: "bold", textTransform: "uppercase", color: "#64748B" }}>Account Settings</span>
-              {/* Perfect Flex Centering added to Drawer Close button */}
-              <button 
-                onClick={() => setIsMenuOpen(false)} 
-                style={{ background: "none", border: "none", color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                <X style={{ width: "24px", height: "24px" }} />
-              </button>
+              <button onClick={() => setIsMenuOpen(false)} style={{ background: "none", border: "none", color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X style={{ width: "24px", height: "24px" }} /></button>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", backgroundColor: "#1E293B", padding: "16px", borderRadius: "16px", border: "1px solid #334155" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "50%", backgroundColor: "#06B6D4", display: "flex", alignItems: "center", justifyContent: "center" }}><User style={{ width: "20px", height: "20px", color: "#0B0F19" }} /></div>
@@ -68,19 +62,13 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Main Top Header Navigation Ribbon */}
+      {/* Main Top Header Ribbon */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid #1E293B", maxWidth: "420px", margin: "0 auto" }}>
         <div>
           <h1 style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>SwiftBet<span style={{ color: "#06B6D4" }}>Analytics</span></h1>
           <p style={{ fontSize: "10px", color: "#64748B", margin: 0 }}>Premium Sports Insights</p>
         </div>
-        {/* Perfect Flex Centering explicitly applied to Menu Icon Container */}
-        <button 
-          onClick={() => setIsMenuOpen(true)} 
-          style={{ width: "38px", height: "38px", backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF", cursor: "pointer" }}
-        >
-          <Menu style={{ width: "18px", height: "18px" }} />
-        </button>
+        <button onClick={() => setIsMenuOpen(true)} style={{ width: "38px", height: "38px", backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF", cursor: "pointer" }}><Menu style={{ width: "18px", height: "18px" }} /></button>
       </header>
 
       {/* Core Body Container Wrapper */}
@@ -105,7 +93,7 @@ export default function Dashboard() {
             
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {activeTab === "active" ? (
-                liveTips.map((tip) => (
+                liveTips.map((tip: any) => ( // Cast to any to satisfy historical compile definitions
                   <div key={tip.id} style={{ backgroundColor: "#0B0F19", padding: "16px", borderRadius: "12px", border: "1px solid #334155", display: "flex", flexDirection: "column", gap: "12px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ fontSize: "10px", color: "#F59E0B", fontWeight: "bold", textTransform: "uppercase" }}>Premium Analysis</span><span style={{ fontSize: "11px", color: "#64748B", fontFamily: "monospace" }}>Odds: {tip.odds}</span></div>
                     <h4 style={{ fontSize: "12px", margin: 0 }}>{tip.fixture}</h4>
@@ -150,7 +138,7 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Mobile Menu Tab Bar */}
+      {/* Bottom Menu Navigation Bar */}
       <nav style={{ position: "fixed", bottom: 0, left: 0, width: "100%", backgroundColor: "#1E293B", borderTop: "1px solid #334155", display: "grid", gridTemplateColumns: "1fr 1fr", height: "56px", zIndex: 90 }}>
         <button onClick={() => setCurrentScreen("feed")} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: currentScreen === "feed" ? "#06B6D4" : "#64748B", cursor: "pointer" }}><TrendingUp style={{ width: "18px", height: "18px" }} /><span style={{ fontSize: "10px", fontWeight: "bold" }}>Analytics Feed</span></button>
         <button onClick={() => setCurrentScreen("invite")} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: currentScreen === "invite" ? "#06B6D4" : "#64748B", cursor: "pointer" }}><Users style={{ width: "18px", height: "18px" }} /><span style={{ fontSize: "10px", fontWeight: "bold" }}>Invite & Earn</span></button>
@@ -159,3 +147,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
