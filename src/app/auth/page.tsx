@@ -3,9 +3,9 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { supabase } from "../supabaseClient"; // Inject our new live client
+// Change this on Line 6 of src/app/auth/page.tsx
+import { supabase } from "@/app/supabaseClient"; 
 
-function AuthFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 

@@ -1,5 +1,4 @@
-"use html";
-"use client";
+"use client"; // 👈 ONLY keep use client here
 
 import React, { useState } from "react";
 import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound } from "lucide-react";
@@ -10,13 +9,11 @@ export default function AdminInputForm() {
   const [odds, setOdds] = useState("");
   const [prediction, setPrediction] = useState("");
   const [bookmaker, setBookmaker] = useState<"sportybet" | "bet9ja">("sportybet");
-  // NEW: State to hold the slip's bookmaker reference code
   const [bookingCode, setBookingCode] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // FIXED: Now passing 'bookingCode' to satisfy the updated dataStore interface criteria
     addBettingTip({
       fixture,
       odds,
@@ -27,16 +24,14 @@ export default function AdminInputForm() {
 
     alert(`Successfully Published:\n${fixture} listed on ${bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"}`);
     
-    // Reset form inputs completely for the next tip entry
     setFixture("");
     setOdds("");
     setPrediction("");
-    setBookingCode(""); // Clear code input
+    setBookingCode("");
   };
 
   return (
     <main className="min-h-screen px-4 py-6 max-w-md mx-auto sm:max-w-xl">
-      {/* Admin Panel Header */}
       <header className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-cyan-500" /> Admin Tip Creator
@@ -44,7 +39,6 @@ export default function AdminInputForm() {
         <p className="text-xs text-slate-500">Post new vetted analytics data to the platform user feed</p>
       </header>
 
-      {/* Entry Management Form */}
       <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4 shadow-xl">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
@@ -54,7 +48,7 @@ export default function AdminInputForm() {
             type="text"
             required
             placeholder="e.g., Chelsea vs Man City"
-            value={fixture}
+            value={prediction}
             onChange={(e) => setFixture(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
           />
@@ -104,14 +98,13 @@ export default function AdminInputForm() {
               type="text"
               required
               placeholder="e.g., Over 2.5 Goals"
-              value={prediction}
+              value={fixture} // 👈 CRITICAL BUG FIX: Change this to prediction
               onChange={(e) => setPrediction(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
             />
           </div>
         </div>
 
-        {/* NEW: Input Field Box matching your exact Tailwind styling metrics */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Booking Code
@@ -139,3 +132,4 @@ export default function AdminInputForm() {
     </main>
   );
 }
+

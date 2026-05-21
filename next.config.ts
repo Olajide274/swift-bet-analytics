@@ -2,12 +2,11 @@
 const nextConfig = {
   typescript: {
     // This allows production builds to successfully complete even if
-    // your project has minor type or styling errors.
+    // your project has type warnings or package layer errors.
     ignoreBuildErrors: true,
   },
   eslint: {
-    // This allows production builds to successfully complete even if
-    // your project has linting or formatting issues.
+    // This bypasses linting issues during production compiles
     ignoreDuringBuilds: true,
   },
 };
