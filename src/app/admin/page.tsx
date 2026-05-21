@@ -13,7 +13,7 @@ export default function AdminInputForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     addBettingTip({
       fixture,
       odds,
@@ -23,7 +23,7 @@ export default function AdminInputForm() {
     });
 
     alert(`Successfully Published:\n${fixture} listed on ${bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"}`);
-    
+
     setFixture("");
     setOdds("");
     setPrediction("");
@@ -40,6 +40,7 @@ export default function AdminInputForm() {
       </header>
 
       <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4 shadow-xl">
+        {/* Match Fixture */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Match Fixture
@@ -48,7 +49,7 @@ export default function AdminInputForm() {
             type="text"
             required
             placeholder="e.g., Chelsea vs Man City"
-            value={prediction}
+            value={fixture}   // ✅ FIXED
             onChange={(e) => setFixture(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
           />
@@ -88,6 +89,7 @@ export default function AdminInputForm() {
           </div>
         </div>
 
+        {/* Market Prediction */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Market Prediction
@@ -98,13 +100,14 @@ export default function AdminInputForm() {
               type="text"
               required
               placeholder="e.g., Over 2.5 Goals"
-              value={fixture} // 👈 CRITICAL BUG FIX: Change this to prediction
+              value={prediction}   // ✅ FIXED
               onChange={(e) => setPrediction(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
             />
           </div>
         </div>
 
+        {/* Booking Code */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Booking Code
@@ -132,4 +135,3 @@ export default function AdminInputForm() {
     </main>
   );
 }
-

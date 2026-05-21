@@ -1,13 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    // This allows production builds to successfully complete even if
-    // your project has type warnings or package layer errors.
+    // Allows production builds even if type errors exist
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    // This bypasses linting issues during production compiles
-    ignoreDuringBuilds: true,
   },
 };
 
