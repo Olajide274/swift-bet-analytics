@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,31 +15,32 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Ping Paystack's secure verification nodes directly from your server
-    const paystackResponse = await fetch(`https://paystack.co{reference}`, {
+    // Correct Paystack verification endpoint
+    const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, // Never show this to clients!
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
     });
 
     const paymentData = await paystackResponse.json();
 
-    // Verify Paystack explicitly returns an authenticated "success" text payload status
     if (paymentData.status && paymentData.data.status === "success") {
       const depositAmountNaira = paymentData.data.amount / 100;
 
-      // Pull current details
-      const { data: profile } = await supabaseAdmin.from("profiles").select("*").eq("id", userId).single();
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
       if (profile) {
-        // Upgrade balances inside your cloud vault
         await supabaseAdmin
           .from("profiles")
           .update({
             real_balance: Number(profile.real_balance) + depositAmountNaira,
             has_deposited: true,
-            is_bonus_unlocked: profile.has_placed_bet ? true : false // Unlock if bet is already placed
+            is_bonus_unlocked: profile.has_placed_bet ? true : false,
           })
           .eq("id", userId);
 
@@ -46,10 +49,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ error: "Payment authentication verification failed" }, { status: 400 });
-
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-// Next.js automatically grabs the hidden key from the environment
-const secretKey = process.env.PAYSTACK_SECRET_KEY;
