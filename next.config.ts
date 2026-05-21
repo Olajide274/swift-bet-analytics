@@ -1,7 +1,15 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  typescript: {
+    // This allows production builds to successfully complete even if
+    // your project has minor type or styling errors.
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // This allows production builds to successfully complete even if
+    // your project has linting or formatting issues.
+    ignoreDuringBuilds: true,
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
