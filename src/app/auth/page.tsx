@@ -26,6 +26,7 @@ function AuthFormContent() {
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [emailOtp, setEmailOtp] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
 
   useEffect(() => {
     const refCode = searchParams.get("ref");
@@ -196,21 +197,51 @@ function AuthFormContent() {
           )}
 
           {/* Terms Agreement & Rollover Notice Box layout (Register only) */}
-          {!isLogin && (
-            <div style={{ backgroundColor: "rgba(245, 158, 11, 0.05)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "12px", padding: "10px", display: "flex", gap: "8px", alignItems: "flex-start" }}>
-              <AlertTriangle style={{ width: "16px", height: "16px", color: "#F59E0B", flexShrink: 0, marginTop: "2px" }} />
-              <div>
-                <p style={{ fontSize: "10px", margin: 0, color: "#E2E8F0", fontWeight: "bold" }}>Bonus Wagering Policy</p>
-                <p style={{ fontSize: "9px", margin: "2px 0 0 0", color: "#94A3B8", lineHeight: "1.3" }}>The ₦2,000 balance is locked. You cannot withdraw this value or secondary referral payouts until you fund a real deposit and book an active stake selection.</p>
-                <label style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "8px", fontSize: "10px", color: "#06B6D4", cursor: "pointer", fontWeight: "bold" }}>
-                  <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} style={{ accentColor: "#06B6D4" }} /> I accept these terms
-                </label>
-              </div>
-            </div>
-          )}
-          <button type="submit" disabled={loading} style={{ width: "100%", backgroundColor: "#06B6D4", color: "#0B0F19", fontWeight: "bold", fontSize: "13px", padding: "12px", borderRadius: "12px", border: "none", cursor: loading ? "not-allowed" : "pointer", marginTop: "8px" }}>
-            {loading ? "Connecting..." : isLogin ? "Sign In to Dashboard" : "Register Profile"}
+         
+{/* Dynamic Clickable Terms Link & Acceptance Toggle */}
+{!isLogin && (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
+    <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", color: "#94A3B8", cursor: "pointer" }}>
+      <input 
+        checked={termsAccepted} 
+        onChange={(e) => setTermsAccepted(e.target.checked)} 
+        style={{ accentColor: "#06B6D4", cursor: "pointer" }} 
+      /> 
+      <span>
+        I agree to the{" "}
+        <span 
+          onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} 
+          style={{ color: "#06B6D4", textDecoration: "underline", fontWeight: "bold" }}
+        >
+          Terms and Conditions
+        </span>
+      </span>
+    </label>
+
+    {/* Pop-up Modal Window Overlay */}
+    {showTermsModal && (
+      <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(11, 15, 25, 0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: "20px", boxSizing: "border-box" }}>
+        <div style={{ backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "20px", padding: "24px", maxWidth: "340px", width: "100%", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <AlertTriangle style={{ width: "18px", height: "18px", color: "#F59E0B" }} />
+            <h3 style={{ fontSize: "14px", fontWeight: "bold", margin: 0, color: "#FFFFFF" }}>Bonus Wagering Policy</h3>
+          </div>
+          <p style={{ fontSize: "11px", color: "#94A3B8", lineHeight: "1.5", margin: "0 0 20px 0" }}>
+            The initial ₦2,000 welcome balance is structurally locked. You cannot withdraw this promotional value, secondary affiliate rewards, or referral tier payouts until your account funds a real fiat cash deposit and successfully logs an active sports stake selection.
+          </p>
+          <button 
+            type="button"
+            onClick={() => setShowTermsModal(false)} 
+            style={{ width: "100%", backgroundColor: "#06B6D4", color: "#0B0F19", border: "none", borderRadius: "10px", padding: "10px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}
+          >
+            Close & Go Back
           </button>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
         </form>
 
         {/* View Swapper Footer Link Trigger */}
