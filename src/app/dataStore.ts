@@ -7,15 +7,18 @@ export interface BettingTip {
   prediction: string;
   bookmaker: "sportybet" | "bet9ja";
   bookingCode: string;
+  isPremium: boolean; // New field to indicate if the tip is for VIP users only
+
 }
 
 export interface PastResult {
   id: string;
   fixture: string;
-  odds: number;
+  odds: string; // FIXED: Changed from number to string to match your text list logs
   prediction: string;
   outcome: "won" | "lost";
 }
+
 
 export interface UserProfile {
   username: string;
@@ -40,7 +43,8 @@ export let sharedTipsList: BettingTip[] = [
     odds: 3.45,
     prediction: "Over 2.5 Goals",
     bookmaker: "sportybet",
-    bookingCode: "SB-CHMCI-2026"
+    bookingCode: "SB-CHMCI-2026",
+    isPremium: false 
   },
   {
     id: "tip-2",
@@ -48,7 +52,18 @@ export let sharedTipsList: BettingTip[] = [
     odds: 1.95,
     prediction: "Home Win (1)",
     bookmaker: "bet9ja",
-    bookingCode: "B9-RMBAR-9922"
+    bookingCode: "B9-RMBAR-9922",
+    isPremium: false 
+  },
+
+  {
+    id: "tip-vip-1",
+    fixture: "Arsenal vs Man United",
+    odds: 14.50, 
+    prediction: "Correct Score 2-1",
+    bookmaker: "sportybet",
+    bookingCode: "SB-VIP-8891",
+    isPremium: true // VIP Premium Slip
   }
 ];
 
@@ -57,30 +72,31 @@ export const historicalResultsList: PastResult[] = [
   {
     id: "hist-1",
     fixture: "Arsenal vs Liverpool",
-    odds: 2.10,
+    odds: "2.10", 
     prediction: "Both Teams To Score",
     outcome: "won"
   },
   {
     id: "hist-2",
     fixture: "Bayern Munich vs Dortmund",
-    odds: 1.75,
+    odds: "1.75", 
     prediction: "Over 3.5 Goals",
     outcome: "won"
   },
   {
     id: "hist-3",
     fixture: "Juventus vs AC Milan",
-    odds: 3.10,
+    odds: "3.10", 
     prediction: "Draw (X)",
     outcome: "lost"
   }
 ];
 
+
 // Default profile
 export let currentUserProfile: UserProfile = {
   username: "michael55",
-  fullName: "Michael Olajide",
+  fullName: "Michael John",
   email: "michael@example.com",
   phoneNumber: "+2348012345678",
   isEmailVerified: false,

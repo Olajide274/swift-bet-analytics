@@ -1,7 +1,7 @@
 "use client"; // 👈 ONLY keep use client here
 
 import React, { useState } from "react";
-import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound } from "lucide-react";
+import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound, Star } from "lucide-react";
 import { addBettingTip } from "../dataStore";
 
 export default function AdminInputForm() {
@@ -10,6 +10,8 @@ export default function AdminInputForm() {
   const [prediction, setPrediction] = useState("");
   const [bookmaker, setBookmaker] = useState<"sportybet" | "bet9ja">("sportybet");
   const [bookingCode, setBookingCode] = useState("");
+  // NEW: Premium authorization classification toggle state
+  const [isPremium, setIsPremium] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,15 +21,17 @@ export default function AdminInputForm() {
       odds,
       prediction,
       bookmaker,
-      bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+      bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+      isPremium: isPremium // NEW: Passes the monetized status flag to your global database store
     });
 
-    alert(`Successfully Published:\n${fixture} listed on ${bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"}`);
+    alert(`Successfully Published:\n${fixture} listed as a ${isPremium ? "⭐ VIP PREMIUM" : "🆓 FREE"} slip!`);
 
     setFixture("");
     setOdds("");
     setPrediction("");
     setBookingCode("");
+    setIsPremium(false); // Resets premium configuration status back to default free selection
   };
 
   return (
@@ -49,7 +53,7 @@ export default function AdminInputForm() {
             type="text"
             required
             placeholder="e.g., Chelsea vs Man City"
-            value={fixture}   // ✅ FIXED
+            value={fixture}
             onChange={(e) => setFixture(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
           />
@@ -62,9 +66,9 @@ export default function AdminInputForm() {
             </label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-mono"><Percent className="w-3.5 h-3.5"/></span>
+              {/* FIXED: Input changed to type text to safely feed string tokens into your data model */}
               <input
-                type="number"
-                step="0.01"
+                type="text"
                 required
                 placeholder="1.85"
                 value={odds}
@@ -100,7 +104,7 @@ export default function AdminInputForm() {
               type="text"
               required
               placeholder="e.g., Over 2.5 Goals"
-              value={prediction}   // ✅ FIXED
+              value={prediction}
               onChange={(e) => setPrediction(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition"
             />
@@ -123,6 +127,23 @@ export default function AdminInputForm() {
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none focus:border-cyan-500 transition uppercase"
             />
           </div>
+        </div>
+
+        {/* NEW ADDITION: Premium Content Selector Interface Wrapper */}
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Star className={`w-4 h-4 ${isPremium ? "text-cyan-500 fill-cyan-500" : "text-slate-600"}`} />
+            <div>
+              <p className="text-xs font-bold text-white">VIP Premium Feed Slip</p>
+              <p className="text-[10px] text-slate-500">Requires paid premium account status subscription tier to unlock</p>
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={isPremium}
+            onChange={(e) => setIsPremium(e.target.checked)}
+            className="w-4 h-4 accent-cyan-500 cursor-pointer"
+          />
         </div>
 
         <button
