@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Wallet, ArrowUpRight, Copy, CheckCircle, LogOut, User, Menu, X, Lock, Unlock, AlertCircle } from "lucide-react";
+import { Wallet, ArrowUpRight, CheckCircle, LogOut, User, Menu, X, Lock, Unlock, AlertCircle, Crown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { sharedTipsList, historicalResultsList, currentUserProfile, BettingTip, PastResult } from "./dataStore";
 
 export default function Dashboard() {
   const router = useRouter();
   
-  // Security Check Gatekeeper: Defaults to false to force them through verification first
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [liveTips, setLiveTips] = useState<BettingTip[]>([]);
@@ -19,19 +17,19 @@ export default function Dashboard() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [currentScreen, setCurrentScreen] = useState<"feed" | "invite">("feed");
 
-  // Track state matching our user profile business model configurations
   const [userProfile, setUserProfile] = useState(currentUserProfile);
   const [referralLink, setReferralLink] = useState<string>("");
 
+  const [unlockedVipSlips, setUnlockedVipSlips] = useState<string[]>([]);
+  const [paywallTargetSlip, setPaywallTargetSlip] = useState<BettingTip | null>(null);
+  const vipUnlockCost = 1000; 
+
   useEffect(() => {
-    // Security Gatekeeper Routing Rule
     if (!isLoggedIn) {
       router.push("/auth");
     }
-
     setLiveTips([...sharedTipsList]);
     setPastResults([...historicalResultsList]);
-
     if (typeof window !== "undefined") {
       const domain = window.location.origin;
       setReferralLink(`${domain}/auth?ref=${userProfile.username}`);
@@ -58,6 +56,21 @@ export default function Dashboard() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const handlePurchaseVipSlip = (slipId: string) => {
+    if (userProfile.realBalance >= vipUnlockCost) {
+      const updatedProfile = {
+        ...userProfile,
+        realBalance: userProfile.realBalance - vipUnlockCost
+      };
+      setUserProfile(updatedProfile);
+      setUnlockedVipSlips([...unlockedVipSlips, slipId]);
+      setPaywallTargetSlip(null);
+      alert("Success! The premium analytics booking code has been unlocked via your wallet balance.");
+    } else {
+      alert("Insufficient Funds: Please top up your Swift Wallet to purchase this premium ticket.");
+      router.push("/deposit");
+    }
+  };
   return (
     <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#0B0F19", color: "#FFFFFF", paddingBottom: "100px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
       
@@ -77,7 +90,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Internal Simple Screen Navigation Swapper */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "24px" }}>
               <button onClick={() => { setCurrentScreen("feed"); setIsMenuOpen(false); }} style={{ width: "100%", textAlign: "left", padding: "12px", borderRadius: "12px", border: "none", backgroundColor: currentScreen === "feed" ? "#334155" : "transparent", color: "#FFFFFF", fontSize: "13px", fontWeight: "bold", cursor: "pointer" }}>Analytics Feed Slips</button>
               <button onClick={() => { setCurrentScreen("invite"); setIsMenuOpen(false); }} style={{ width: "100%", textAlign: "left", padding: "12px", borderRadius: "12px", border: "none", backgroundColor: currentScreen === "invite" ? "#334155" : "transparent", color: "#FFFFFF", fontSize: "13px", fontWeight: "bold", cursor: "pointer" }}>Invite Friends & Earn</button>
@@ -98,10 +110,9 @@ export default function Dashboard() {
 
       {/* Core Body Container Wrapper */}
       <div style={{ maxWidth: "420px", margin: "0 auto", padding: "16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "20px" }}>
-        
         {/* Wallet Component Structure */}
         <section style={{ backgroundColor: "#1E293B", borderRadius: "20px", padding: "20px", border: "1px solid #334155" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyBox: "space-between", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Wallet style={{ width: "18px", height: "18px", color: "#10B981" }} />
               <h2 style={{ fontSize: "13px", fontWeight: "bold", margin: 0, color: "#E2E8F0" }}>Your Swift Wallet</h2>
@@ -124,12 +135,11 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Conditional Warning notice about locked layout rules */}
           {!userProfile.isBonusUnlocked && (
             <div style={{ display: "flex", gap: "6px", backgroundColor: "rgba(245, 158, 11, 0.05)", border: "1px solid rgba(245, 158, 11, 0.15)", borderRadius: "10px", padding: "10px", marginBottom: "16px", alignItems: "flex-start" }}>
               <AlertCircle style={{ width: "14px", height: "14px", color: "#F59E0B", flexShrink: 0, marginTop: "1px" }} />
               <p style={{ fontSize: "9px", color: "#94A3B8", margin: 0, lineHeight: "1.3" }}>
-                To cash out the ₦2,000 bonus balance or referral stakes, you must fulfill the wagering profile criteria: 
+                To cash out your ₦2,000 bonus or affiliate earnings, you must complete the profile verification conditions: 
                 <strong> {!userProfile.hasDeposited && " [Deposit Cash Required] "} </strong>
                 <strong> {!userProfile.hasPlacedBet && " [Place First Bet Required] "}</strong>
               </p>
@@ -141,7 +151,6 @@ export default function Dashboard() {
           </button>
         </section>
 
-        {/* Dynamic Panel Screen Content Display Switcher */}
         {currentScreen === "feed" ? (
           <section style={{ backgroundColor: "#1E293B", borderRadius: "20px", padding: "20px", border: "1px solid #334155" }}>
             <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #334155", paddingBottom: "12px", marginBottom: "16px" }}>
@@ -149,22 +158,39 @@ export default function Dashboard() {
               <button onClick={() => setActiveTab("history")} style={{ flex: 1, backgroundColor: activeTab === "history" ? "#06B6D4" : "transparent", color: activeTab === "history" ? "#0B0F19" : "#94A3B8", border: "none", padding: "8px 0", borderRadius: "10px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Results History</button>
             </div>
             
-            {/* REPAIRED: Clean, fully mapped data renderer loop blocks */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {activeTab === "active" ? (
-                liveTips.map((tip) => (
-                  <div key={tip.id} style={{ backgroundColor: "#0B0F19", padding: "14px", borderRadius: "12px", border: "1px solid #334155" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                      <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#334155", textTransform: "uppercase", color: "#06B6D4", fontWeight: "bold" }}>{tip.bookmaker}</span>
-                      <span style={{ fontSize: "13px", fontWeight: "bold", color: "#10B981" }}>{tip.odds} Odds</span>
+                liveTips.map((tip) => {
+                  const isLockedVip = tip.isVIP && !unlockedVipSlips.includes(tip.id);
+                  return (
+                    <div key={tip.id} style={{ backgroundColor: "#0B0F19", padding: "14px", borderRadius: "12px", border: "1px solid #334155", position: "relative", overflow: "hidden" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                          <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#334155", textTransform: "uppercase", color: "#06B6D4", fontWeight: "bold" }}>{tip.bookmaker}</span>
+                          {tip.isVIP && <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#F59E0B", fontWeight: "bold", display: "flex", alignItems: "center", gap: "2px" }}><Crown style={{ width: "10px", height: "10px" }} /> VIP</span>}
+                        </div>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: "#10B981" }}>{tip.odds} Odds</span>
+                      </div>
+                      <p style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 4px 0" }}>{tip.fixture}</p>
+                      
+                      {isLockedVip ? (
+                        <div>
+                          <p style={{ fontSize: "11px", color: "#64748B", margin: "0 0 12px 0" }}>Market Pick: <span style={{ color: "#F59E0B", filter: "blur(4px)", userSelect: "none" }}>Hidden Market</span></p>
+                          <button onClick={() => setPaywallTargetSlip(tip)} style={{ width: "100%", backgroundColor: "#F59E0B", color: "#0B0F19", padding: "8px", borderRadius: "8px", fontSize: "11px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", border: "none" }}>
+                            <Lock style={{ width: "12px", height: "12px" }} /> Unlock VIP Booking Slip (₦{vipUnlockCost})
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <p style={{ fontSize: "11px", color: "#94A3B8", margin: "0 0 12px 0" }}>Market Pick: <span style={{ color: "#FFFFFF", fontWeight: "bold" }}>{tip.prediction}</span></p>
+                          <button onClick={() => handleCopyBookingCode(tip.bookingCode, tip.id)} style={{ width: "100%", backgroundColor: "rgba(6, 182, 212, 0.1)", border: "1px solid #06B6D4", color: "#06B6D4", padding: "8px", borderRadius: "8px", fontSize: "11px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                            {copiedCodeId === tip.id ? <><CheckCircle style={{ width: "12px", height: "12px" }} /> Booking Code Copied!</> : <>Copy Slip Booking Code</>}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <p style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 4px 0" }}>{tip.fixture}</p>
-                    <p style={{ fontSize: "11px", color: "#94A3B8", margin: "0 0 12px 0" }}>Pick: <span style={{ color: "#FFFFFF" }}>{tip.prediction}</span></p>
-                    <button onClick={() => handleCopyBookingCode(tip.bookingCode, tip.id)} style={{ width: "100%", backgroundColor: "rgba(6, 182, 212, 0.1)", border: "1px solid #06B6D4", color: "#06B6D4", padding: "8px", borderRadius: "8px", fontSize: "11px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-                      {copiedCodeId === tip.id ? <><CheckCircle style={{ width: "12px", height: "12px" }} /> Booking Code Copied!</> : <>Copy Slip Booking Code</>}
-                    </button>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 pastResults.map((res) => (
                   <div key={res.id} style={{ backgroundColor: "#0B0F19", padding: "14px", borderRadius: "12px", border: "1px solid #334155" }}>
@@ -179,13 +205,30 @@ export default function Dashboard() {
             </div>
           </section>
         ) : (
-          /* Referral Management Panel Box */
+          /* Multi-Tier Affiliate Matrix Grid Box Panel */
           <section style={{ backgroundColor: "#1E293B", borderRadius: "20px", padding: "20px", border: "1px solid #334155" }}>
-            <h2 style={{ fontSize: "14px", fontWeight: "bold", margin: "0 0 6px 0" }}>Affiliate Referral Program</h2>
-            <p style={{ fontSize: "11px", color: "#94A3B8", margin: "0 0 16px 0", lineHeight: "1.4" }}>Invite secondary sports bettors using your direct credential link. Payout stakes are unlocked as soon as your referral fulfills the deposit terms.</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+              <Users style={{ width: "18px", height: "18px", color: "#06B6D4" }} />
+              <h2 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>2-Tier Network Dashboard</h2>
+            </div>
+            <p style={{ fontSize: "11px", color: "#94A3B8", margin: "0 0 16px 0", lineHeight: "1.4" }}>Invite friends using your custom link below. Earn continuous commissions down two layers deep into your real cash wallet.</p>
             
-            <div style={{ backgroundColor: "#0B0F19", padding: "12px", borderRadius: "12px", border: "1px solid #334155", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-              <span style={{ fontSize: "10px", color: "#64748B", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "24px", flex: 1 }}>{referralLink}</span>
+            {/* Relational Stats Tracking Grid Matrix */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+              <div style={{ backgroundColor: "#0B0F19", padding: "12px", borderRadius: "12px", border: "1px solid #334155" }}>
+                <p style={{ fontSize: "9px", textTransform: "uppercase", color: "#64748B", margin: "0 0 2px 0" }}>Tier 1 (Direct)</p>
+                <p style={{ fontSize: "16px", fontWeight: "bold", margin: 0, color: "#06B6D4" }}>{userProfile.tier1Referrals || 0} Users</p>
+                <p style={{ fontSize: "8px", color: "#64748B", margin: "2px 0 0 0" }}>Earn ₦500 per activation</p>
+              </div>
+              <div style={{ backgroundColor: "#0B0F19", padding: "12px", borderRadius: "12px", border: "1px solid #334155" }}>
+                <p style={{ fontSize: "9px", textTransform: "uppercase", color: "#64748B", margin: "0 0 2px 0" }}>Tier 2 (Indirect)</p>
+                <p style={{ fontSize: "16px", fontWeight: "bold", margin: 0, color: "#10B981" }}>{userProfile.tier2Referrals || 0} Users</p>
+                <p style={{ fontSize: "8px", color: "#64748B", margin: "2px 0 0 0" }}>Earn ₦150 per activation</p>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: "#0B0F19", padding: "12px", borderRadius: "12px", border: "1px solid #334155", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "10px", color: "#64748B", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{referralLink}</span>
               <button onClick={handleCopyReferral} style={{ border: "none", backgroundColor: "#06B6D4", color: "#0B0F19", padding: "6px 12px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", cursor: "pointer", marginLeft: "8px" }}>
                 {copiedLink ? "Copied!" : "Copy Link"}
               </button>
@@ -193,7 +236,29 @@ export default function Dashboard() {
           </section>
         )}
       </div>
+
+      {/* POPUP PAYWALL OVERLAY INTERACTIVE FRAME */}
+      {paywallTargetSlip && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(11, 15, 25, 0.95)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: "20px", boxSizing: "border-box" }}>
+          <div style={{ backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "24px", padding: "24px", maxWidth: "360px", width: "100%", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+              <Crown style={{ width: "20px", height: "20px", color: "#F59E0B" }} />
+              <h3 style={{ fontSize: "16px", fontWeight: "bold", margin: 0, color: "#FFFFFF" }}>Unlock Premium Ticket</h3>
+            </div>
+            <p style={{ fontSize: "12px", color: "#94A3B8", lineHeight: "1.5", margin: "0 0 16px 0" }}>
+              This slip features an expert analytics breakdown targeting <strong>{paywallTargetSlip.odds} total odds</strong> on {paywallTargetSlip.bookmaker}. Unlocking it will immediately reveal the prediction and booking code.
+            </p>
+            <div style={{ backgroundColor: "#0B0F19", padding: "12px", borderRadius: "12px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <span style={{ fontSize: "11px", color: "#64748B" }}>Ticket Price:</span>
+              <span style={{ fontSize: "14px", fontWeight: "bold", color: "#10B981" }}>₦{vipUnlockCost} Real Cash</span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button onClick={() => setPaywallTargetSlip(null)} style={{ flex: 1, backgroundColor: "transparent", border: "1px solid #334155", color: "#94A3B8", borderRadius: "10px", padding: "10px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => handlePurchaseVipSlip(paywallTargetSlip.id)} style={{ flex: 1, backgroundColor: "#10B981", color: "#0B0F19", border: "none", borderRadius: "10px", padding: "10px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Unlock Now</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

@@ -1,7 +1,8 @@
-"use client"; // 👈 ONLY keep use client here
+
+"use client";
 
 import React, { useState } from "react";
-import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound, Star } from "lucide-react";
+import { PlusCircle, ShieldAlert, Tag, Percent, KeyRound, Crown } from "lucide-react";
 import { addBettingTip } from "../dataStore";
 
 export default function AdminInputForm() {
@@ -10,32 +11,39 @@ export default function AdminInputForm() {
   const [prediction, setPrediction] = useState("");
   const [bookmaker, setBookmaker] = useState<"sportybet" | "bet9ja">("sportybet");
   const [bookingCode, setBookingCode] = useState("");
-  // NEW: Premium authorization classification toggle state
-  const [isPremium, setIsPremium] = useState<boolean>(false);
+  // NEW: State to toggle if the tip is premium/VIP or completely free
+  const [isVIP, setIsVIP] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
+    // UPDATED: Now passing 'isVIP' along to satisfy our updated dataStore schema rules
     addBettingTip({
       fixture,
       odds,
       prediction,
       bookmaker,
       bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
-      isPremium: isPremium // NEW: Passes the monetized status flag to your global database store
+      isVIP: isVIP
     });
 
-    alert(`Successfully Published:\n${fixture} listed as a ${isPremium ? "⭐ VIP PREMIUM" : "🆓 FREE"} slip!`);
-
+    alert(
+      `Successfully Published:\n${fixture} listed on ${
+        bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"
+      }\nTier Status: ${isVIP ? "👑 VIP Locked Paywall" : "🔓 Public Free Feed"}`
+    );
+    
+    // Reset form inputs completely for the next tip entry
     setFixture("");
     setOdds("");
     setPrediction("");
     setBookingCode("");
-    setIsPremium(false); // Resets premium configuration status back to default free selection
+    setIsVIP(false); // Reset VIP toggle status safely
   };
 
   return (
     <main className="min-h-screen px-4 py-6 max-w-md mx-auto sm:max-w-xl">
+      {/* Admin Panel Header */}
       <header className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-cyan-500" /> Admin Tip Creator
@@ -43,8 +51,8 @@ export default function AdminInputForm() {
         <p className="text-xs text-slate-500">Post new vetted analytics data to the platform user feed</p>
       </header>
 
+      {/* Entry Management Form */}
       <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4 shadow-xl">
-        {/* Match Fixture */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Match Fixture
@@ -66,9 +74,9 @@ export default function AdminInputForm() {
             </label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-mono"><Percent className="w-3.5 h-3.5"/></span>
-              {/* FIXED: Input changed to type text to safely feed string tokens into your data model */}
               <input
-                type="text"
+                type="number"
+                step="0.01"
                 required
                 placeholder="1.85"
                 value={odds}
@@ -93,7 +101,6 @@ export default function AdminInputForm() {
           </div>
         </div>
 
-        {/* Market Prediction */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Market Prediction
@@ -111,7 +118,6 @@ export default function AdminInputForm() {
           </div>
         </div>
 
-        {/* Booking Code */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
             Booking Code
@@ -129,21 +135,25 @@ export default function AdminInputForm() {
           </div>
         </div>
 
-        {/* NEW ADDITION: Premium Content Selector Interface Wrapper */}
-        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Star className={`w-4 h-4 ${isPremium ? "text-cyan-500 fill-cyan-500" : "text-slate-600"}`} />
+        {/* NEW: High-Yield Premium VIP Content Toggle Box */}
+        <div 
+          onClick={() => setIsVIP(!isVIP)}
+          className={`flex items-center justify-between p-3.5 rounded-xl border transition cursor-pointer select-none ${
+            isVIP 
+              ? "bg-amber-500/10 border-amber-500 text-amber-500 shadow-lg shadow-amber-500/5" 
+              : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Crown className={`w-4 h-4 ${isVIP ? "text-amber-500 animate-pulse" : "text-slate-500"}`} />
             <div>
-              <p className="text-xs font-bold text-white">VIP Premium Feed Slip</p>
-              <p className="text-[10px] text-slate-500">Requires paid premium account status subscription tier to unlock</p>
+              <p className="text-xs font-bold text-white">VIP Subscription Paywall</p>
+              <p className="text-[10px] text-slate-500">Lock this premium high-odds slip from free users</p>
             </div>
           </div>
-          <input
-            type="checkbox"
-            checked={isPremium}
-            onChange={(e) => setIsPremium(e.target.checked)}
-            className="w-4 h-4 accent-cyan-500 cursor-pointer"
-          />
+          <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-200 ${isVIP ? "bg-amber-500" : "bg-slate-800"}`}>
+            <div className={`w-3 h-3 rounded-full bg-slate-950 transform transition-transform duration-200 ${isVIP ? "translate-x-4" : "translate-x-0"}`} />
+          </div>
         </div>
 
         <button
