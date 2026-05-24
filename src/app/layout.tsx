@@ -35,3 +35,6 @@ export default function RootLayout({
     </html>
   );
 }
+// FIXED: Forces Next.js to bypass static pre-rendering across all platform routes
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";

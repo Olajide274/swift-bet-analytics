@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+import { createClient } from '@supabase/supabase-js';
 
 import React, { useState, useEffect } from "react";
 import { Wallet, ArrowUpRight, CheckCircle, LogOut, User, Menu, X, Lock, Unlock, AlertCircle, Crown, Users } from "lucide-react";
@@ -7,7 +9,8 @@ import { sharedTipsList, historicalResultsList, currentUserProfile, BettingTip, 
 
 export default function Dashboard() {
   const router = useRouter();
-  
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
@@ -25,16 +28,108 @@ export default function Dashboard() {
   const vipUnlockCost = 1000; 
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push("/auth");
-    }
+    const fetchLiveUserProfile = async () => {
+      // 1. Fetch the unique cloud user currently logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsLoggedIn(false);
+        router.push("/auth");
+        return;
+      }
+  useEffect(() => {
+    // FIXED: Safely bypasses execution if the database engine hasn't initialized on the client browser yet
+    if (!supabase) return;
+
+    const fetchLiveUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsLoggedIn(false);
+        router.push("/auth");
+        return;
+      }
+
+      setIsLoggedIn(true);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setUserProfile({
+          username: profile.username,
+          fullName: profile.full_name,
+          email: user.email || "",
+          phoneNumber: profile.phone_number || "",
+          isEmailVerified: profile.is_email_verified || false,
+          isPhoneVerified: profile.is_phone_verified || false,
+          realBalance: Number(profile.real_balance),    
+          bonusBalance: Number(profile.bonus_balance),  
+          hasDeposited: profile.has_deposited,
+          hasPlacedBet: profile.has_placed_bet,
+          isBonusUnlocked: profile.is_bonus_unlocked,
+          referredBy: profile.referred_by,
+          tier1Referrals: Number(profile.tier_1_referrals || 0),
+          tier2Referrals: Number(profile.tier_2_referrals || 0)
+        });
+      }
+    };
+
+    fetchLiveUserProfile();
+
     setLiveTips([...sharedTipsList]);
     setPastResults([...historicalResultsList]);
+
     if (typeof window !== "undefined") {
       const domain = window.location.origin;
       setReferralLink(`${domain}/auth?ref=${userProfile.username}`);
     }
-  }, [isLoggedIn, router, userProfile.username]);
+  }, [router, userProfile.username]);
+
+      setIsLoggedIn(true);
+
+      // 2. Query your live database profiles table row
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setUserProfile({
+          username: profile.username,
+          fullName: profile.full_name,
+          email: user.email || "",
+          phoneNumber: profile.phone_number || "",
+          isEmailVerified: profile.is_email_verified || false,
+          isPhoneVerified: profile.is_phone_verified || false,
+          realBalance: Number(profile.real_balance),    // Correctly shows ₦0 for new signups
+          bonusBalance: Number(profile.bonus_balance),  // Correctly shows ₦2,000 welcome credit
+          hasDeposited: profile.has_deposited,
+          hasPlacedBet: profile.has_placed_bet,
+          isBonusUnlocked: profile.is_bonus_unlocked,
+          referredBy: profile.referred_by,
+          tier1Referrals: Number(profile.tier_1_referrals || 0),
+          tier2Referrals: Number(profile.tier_2_referrals || 0)
+        });
+      }
+    };
+
+    fetchLiveUserProfile();
+
+    // 3. Load the interactive betting arrays
+    setLiveTips([...sharedTipsList]);
+    setPastResults([...historicalResultsList]);
+
+    if (typeof window !== "undefined") {
+      const domain = window.location.origin;
+      setReferralLink(`${domain}/auth?ref=${userProfile.username}`);
+    }
+  }, [router, userProfile.username]);
+
 
   if (!isLoggedIn) {
     return (
