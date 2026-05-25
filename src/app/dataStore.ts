@@ -1,9 +1,7 @@
 // 1. Clean import for the TypeScript types from the node_modules package
 import { createClient } from "@supabase/supabase-js"; 
 
-// 2. Clean import pointing to YOUR local configuration file
-import { supabase } from "./superbaseClient"; 
-
+import { supabase } from "./superbaseClient";
 
 export interface BettingTip {
   id: string;
@@ -24,7 +22,7 @@ export interface PastResult {
 }
 
 export interface UserProfile {
-  id?: string; // Links back to Supabase auth user reference metadata
+  id?: string; 
   username: string;
   fullName: string;
   email: string;
@@ -41,7 +39,7 @@ export interface UserProfile {
   tier2Referrals: number;
 }
 
-// FETCH LIVE DATA FROM SUPABASE (Call this inside your Client Components / Dashboards)
+// FETCH LIVE DATA FROM SUPABASE
 export async function getLiveBettingTips(): Promise<BettingTip[]> {
   const { data, error } = await supabase
     .from('betting_tips')
@@ -53,7 +51,6 @@ export async function getLiveBettingTips(): Promise<BettingTip[]> {
     return [];
   }
 
-  // Maps database snake_case keys back to your frontend camelCase parameters smoothly
   return data.map((tip: any) => ({
     id: tip.id,
     fixture: tip.fixture,
@@ -65,7 +62,7 @@ export async function getLiveBettingTips(): Promise<BettingTip[]> {
   }));
 }
 
-// ADD NEW BETTING TIP VIA ADMIN PANEL DIRECTLY INTO SUPABASE
+// ADD NEW BETTING TIP VIA ADMIN PANEL
 export async function addBettingTip(newTip: Omit<BettingTip, "id">) {
   const { data, error } = await supabase
     .from('betting_tips')
@@ -87,7 +84,6 @@ export async function addBettingTip(newTip: Omit<BettingTip, "id">) {
   return data;
 }
 
-// LOGIC UTILITY RULE: Evaluation logic functions remain clean & calculations fast
 export const evaluateBonusUnlockCondition = (profile: UserProfile): UserProfile => {
   if (profile.hasDeposited && profile.hasPlacedBet) {
     profile.isBonusUnlocked = true;
@@ -96,7 +92,8 @@ export const evaluateBonusUnlockCondition = (profile: UserProfile): UserProfile 
   }
   return profile;
 };
-// FALLBACK DATA: Restored to fix the imports in your main dashboard page.tsx
+
+// FALLBACK EXPORTS FOR COMPILATION COMPATIBILITY
 export let sharedTipsList: BettingTip[] = [
   {
     id: "tip-1",
@@ -106,24 +103,6 @@ export let sharedTipsList: BettingTip[] = [
     bookmaker: "sportybet",
     bookingCode: "SB-CHMCI-2026",
     isVIP: false
-  },
-  {
-    id: "tip-2",
-    fixture: "Real Madrid vs Barcelona",
-    odds: "1.95",
-    prediction: "Home Win (1)",
-    bookmaker: "bet9ja",
-    bookingCode: "B9-RMBAR-9922",
-    isVIP: false
-  },
-  {
-    id: "tip-vip-3",
-    fixture: "Liverpool vs Man United",
-    odds: "4.85",
-    prediction: "Handicap (0:1)",
-    bookmaker: "sportybet",
-    bookingCode: "SB-LIVMUN-551",
-    isVIP: true
   }
 ];
 
@@ -134,20 +113,6 @@ export const historicalResultsList: PastResult[] = [
     odds: "2.10",
     prediction: "Both Teams To Score",
     outcome: "won"
-  },
-  {
-    id: "hist-2",
-    fixture: "Bayern Munich vs Dortmund",
-    odds: "1.75",
-    prediction: "Over 3.5 Goals",
-    outcome: "won"
-  },
-  {
-    id: "hist-3",
-    fixture: "Juventus vs AC Milan",
-    odds: "3.10",
-    prediction: "Draw (X)",
-    outcome: "lost"
   }
 ];
 

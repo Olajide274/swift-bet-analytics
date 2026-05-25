@@ -5,7 +5,8 @@ import React, { useState, useEffect } from "react";
 import { Wallet, ArrowUpRight, CheckCircle, LogOut, User, Menu, X, Lock, Unlock, AlertCircle, Crown, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
-import { currentUserProfile, BettingTip, PastResult } from "./dataStore";
+import { sharedTipsList, historicalResultsList, currentUserProfile, BettingTip, PastResult, UserProfile } from "./dataStore";
+
 
 export default function Dashboard() {
   const router = useRouter();

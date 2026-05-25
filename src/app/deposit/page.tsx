@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
-import { currentUserProfile, evaluateBonusUnlockCondition } from "../dataStore";
+import { currentUserProfile, UserProfile } from "../dataStore";
 
 // Declare Paystack on the global window scope to satisfy TypeScript compiler rules
 declare global {
