@@ -4,14 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle, Users } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
-
-// REPLACE the old hardcoded URLs with these clean, dynamic environment calls:
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// Ensure this matches your initialization variable directly below:
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
+import { supabase } from "../superbaseClient";
 
 function AuthFormContent() {
   const searchParams = useSearchParams();
