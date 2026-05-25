@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle, Users } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://inygbyqptgrxngrmmpbv.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhaWpldHJrc3Z5aXdvcW9ycnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODQ0NTAsImV4cCI6MjA5NDg2MDQ1MH0.wOdZP6Auvsu93CROqLlS7NdtHeaj2vBJzvbEUP0WLYk";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -63,7 +63,7 @@ function AuthFormContent() {
               full_name: name,
               phone_number: phone,
               username: email.split("@")[0] + Math.floor(100 + Math.random() * 900),
-              referred_by: referrerCode || null
+              referred_by: referrerCode.trim() || null
             }
           }
         });
@@ -113,7 +113,7 @@ function AuthFormContent() {
           <form onSubmit={handleVerifyOTP} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>6-Digit Verification Code</label>
-              <input type="text" maxLength={6} required placeholder="123456" value={emailOtp} onChange={(e) => setEmailOtp(e.replace(/\D/g, ""))} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px", fontSize: "14px", color: "#FFFFFF", textAlign: "center", letterSpacing: "4px" }} />
+              <input type="text" maxLength={6} required placeholder="123456" value={emailOtp} onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px", fontSize: "14px", color: "#FFFFFF", textAlign: "center", letterSpacing: "4px" }} />
             </div>
 
             <button type="submit" disabled={loading} style={{ width: "100%", backgroundColor: "#06B6D4", color: "#0B0F19", fontWeight: "bold", fontSize: "13px", padding: "12px", borderRadius: "12px", border: "none", cursor: loading ? "not-allowed" : "pointer", marginTop: "8px" }}>
@@ -173,7 +173,6 @@ function AuthFormContent() {
               </div>
             </div>
           )}
-
           {/* Password Input Field slot */}
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Password</label>
@@ -182,6 +181,17 @@ function AuthFormContent() {
               <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
             </div>
           </div>
+
+          {/* RESTORED: Optional Referral Code Field slot (Register only) */}
+          {!isLogin && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Referral Code (Optional)</label>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Users style={{ width: "16px", height: "16px" }} /></span>
+                <input type="text" placeholder="e.g., michael55" value={referrerCode} onChange={(e) => setReferrerCode(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+              </div>
+            </div>
+          )}
 
           {/* Terms Agreement Checkbox Box (Register only) */}
           {!isLogin && (
@@ -199,8 +209,8 @@ function AuthFormContent() {
           </button>
         </form>
 
-        {/* NEW: View Account Switch Link Controller Toggle Box */}
-        <div style={{ textCenter: "center", fontSize: "12px", color: "#64748B", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #334155", textAlign: "center" }}>
+        {/* View Account Switch Link Controller Toggle Box */}
+        <div style={{ fontSize: "12px", color: "#64748B", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #334155", textAlign: "center" }}>
           {isLogin ? (
             <p style={{ margin: 0 }}>Don't have an account? <button onClick={() => setIsLogin(false)} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Register Here</button></p>
           ) : (
@@ -227,7 +237,6 @@ function AuthFormContent() {
   );
 }
 
-// Global Main Page Export Component Wrapper handling dynamic hydration safely
 export default function AuthPage() {
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#0B0F19", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", boxSizing: "border-box", fontFamily: "sans-serif" }}>
