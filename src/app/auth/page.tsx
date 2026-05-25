@@ -5,7 +5,7 @@ import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://inygbyqptgrxngrmmpbv.supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhaWpldHJrc3Z5aXdvcW9ycnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODQ0NTAsImV4cCI6MjA5NDg2MDQ1MH0.wOdZP6Auvsu93CROqLlS7NdtHeaj2vBJzvbEUP0WLYk";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -27,6 +27,11 @@ function AuthFormContent() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
 
+  // NEW PASSWORD RECOVERY STATE HOOKS
+  const [isRecoveryView, setIsRecoveryView] = useState<boolean>(false);
+  const [recoveryStep, setRecoveryStep] = useState<1 | 2>(1); 
+  const [recoveryPin, setRecoveryPin] = useState<string>("");
+
   useEffect(() => {
     const refCode = searchParams.get("ref");
     if (refCode) {
@@ -41,7 +46,32 @@ function AuthFormContent() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isRecoveryView) {
+        if (recoveryStep === 1) {
+          // PASSWORD RESET STEP 1: DISPATCH PIN NUMBER CODE
+          const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+          if (error) throw error;
+          alert("A unique secure recovery pin code has been sent to your email box!");
+          setRecoveryStep(2);
+        } else {
+          // PASSWORD RESET STEP 2: CLEAR ACCESS TOKEN
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            email: email.trim(),
+            token: recoveryPin,
+            type: "recovery",
+          });
+          if (verifyError) throw verifyError;
+
+          // PASSWORD RESET STEP 3: SUBMIT NEW USER PASSWORD STRING
+          const { error: updateError } = await supabase.auth.updateUser({ password: password });
+          if (updateError) throw updateError;
+
+          alert("Security Verification Clear! New login password configured successfully.");
+          setIsRecoveryView(false);
+          setRecoveryStep(1);
+          setIsLogin(true);
+        }
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password,
@@ -135,7 +165,13 @@ function AuthFormContent() {
           SwiftBet<span style={{ color: "#06B6D4" }}>Analytics</span>
         </h1>
         <p style={{ fontSize: "12px", color: "#64748B", marginTop: "6px", marginBottom: "0", lineHeight: "1.4" }}>
-          {isLogin ? "Access your premium analytics portfolio" : "Claim your ₦2,000 locked wagering bonus balance"}
+          {isRecoveryView 
+            ? recoveryStep === 1 
+              ? "Request a secure password recovery code" 
+              : "Enter your verification code and choose a new password"
+            : isLogin 
+              ? "Access your premium analytics portfolio" 
+              : "Claim your ₦2,000 locked wagering bonus balance"}
         </p>
       </div>
 
@@ -144,7 +180,7 @@ function AuthFormContent() {
         <form onSubmit={handleInitialSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           
           {/* Full Name Field slot (Register only) */}
-          {!isLogin && (
+          {!isLogin && !isRecoveryView && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Full Name</label>
               <div style={{ position: "relative", width: "100%" }}>
@@ -155,16 +191,18 @@ function AuthFormContent() {
           )}
 
           {/* Email Address Field slot */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Email Address</label>
-            <div style={{ position: "relative", width: "100%" }}>
-              <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Mail style={{ width: "16px", height: "16px" }} /></span>
-              <input type="email" required placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+          {!(isRecoveryView && recoveryStep === 2) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Email Address</label>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Mail style={{ width: "16px", height: "16px" }} /></span>
+                <input type="email" required placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Phone Number Field slot (Register only) */}
-          {!isLogin && (
+          {!isLogin && !isRecoveryView && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Phone Number</label>
               <div style={{ position: "relative", width: "100%" }}>
@@ -173,17 +211,32 @@ function AuthFormContent() {
               </div>
             </div>
           )}
-          {/* Password Input Field slot */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Password</label>
-            <div style={{ position: "relative", width: "100%" }}>
-              <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Lock style={{ width: "16px", height: "16px" }} /></span>
-              <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+          {/* Recovery Code PIN Input Field (Recovery step 2 only) */}
+          {isRecoveryView && recoveryStep === 2 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>6-Digit Recovery Pin</label>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><KeyRound style={{ width: "16px", height: "16px" }} /></span>
+                <input type="text" maxLength={6} required placeholder="123456" value={recoveryPin} onChange={(e) => setRecoveryPin(e.target.value.replace(/\D/g, ""))} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box", letterSpacing: "2px" }} />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* RESTORED: Optional Referral Code Field slot (Register only) */}
-          {!isLogin && (
+          {/* Password Input Field slot (Hidden on recovery step 1) */}
+          {!(isRecoveryView && recoveryStep === 1) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>
+                {isRecoveryView ? "New Password" : "Password"}
+              </label>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Lock style={{ width: "16px", height: "16px" }} /></span>
+                <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Referral Code Field slot (Register only) */}
+          {!isLogin && !isRecoveryView && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Referral Code (Optional)</label>
               <div style={{ position: "relative", width: "100%" }}>
@@ -193,8 +246,17 @@ function AuthFormContent() {
             </div>
           )}
 
+          {/* Inline Forgot Password Toggle Link (Login view only) */}
+          {isLogin && !isRecoveryView && (
+            <div style={{ textAlign: "right" }}>
+              <button type="button" onClick={() => { setIsRecoveryView(true); setRecoveryStep(1); }} style={{ background: "none", border: "none", color: "#64748B", fontSize: "11px", cursor: "pointer", padding: 0 }}>
+                Forgot Password?
+              </button>
+            </div>
+          )}
+
           {/* Terms Agreement Checkbox Box (Register only) */}
-          {!isLogin && (
+          {!isLogin && !isRecoveryView && (
             <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginTop: "4px" }}>
               <input type="checkbox" id="terms" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} style={{ marginTop: "2px", accentColor: "#06B6D4" }} />
               <label htmlFor="terms" style={{ fontSize: "11px", color: "#94A3B8", lineHeight: "1.4" }}>
@@ -203,18 +265,30 @@ function AuthFormContent() {
             </div>
           )}
 
-          {/* Action Submission Trigger Button */}
+          {/* Action Submission Button */}
           <button type="submit" disabled={loading} style={{ width: "100%", backgroundColor: "#06B6D4", color: "#0B0F19", fontWeight: "bold", fontSize: "13px", padding: "12px", borderRadius: "12px", border: "none", cursor: loading ? "not-allowed" : "pointer", marginTop: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-            {loading ? "Processing..." : isLogin ? "Sign In to Account" : "Secure Welcome Bonus"}
+            {loading 
+              ? "Processing..." 
+              : isRecoveryView 
+                ? recoveryStep === 1 ? "Send Reset Code" : "Update Password"
+                : isLogin ? "Sign In to Account" : "Secure Welcome Bonus"}
           </button>
         </form>
 
-        {/* View Account Switch Link Controller Toggle Box */}
+        {/* View Switching Links Controller Layout */}
         <div style={{ fontSize: "12px", color: "#64748B", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #334155", textAlign: "center" }}>
-          {isLogin ? (
-            <p style={{ margin: 0 }}>Don't have an account? <button onClick={() => setIsLogin(false)} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Register Here</button></p>
+          {isRecoveryView ? (
+            <p style={{ margin: 0 }}>
+              Remembered your password? <button onClick={() => { setIsRecoveryView(false); setIsLogin(true); }} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Sign In</button>
+            </p>
+          ) : isLogin ? (
+            <p style={{ margin: 0 }}>
+              Don't have an account? <button onClick={() => setIsLogin(false)} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Register Here</button>
+            </p>
           ) : (
-            <p style={{ margin: 0 }}>Already have an account? <button onClick={() => setIsLogin(true)} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Sign In</button></p>
+            <p style={{ margin: 0 }}>
+              Already have an account? <button onClick={() => setIsLogin(true)} style={{ background: "none", border: "none", color: "#06B6D4", fontWeight: "bold", cursor: "pointer", padding: 0, textDecoration: "underline" }}>Sign In</button>
+            </p>
           )}
         </div>
       </section>
