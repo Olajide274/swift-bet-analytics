@@ -3,7 +3,6 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { ShieldCheck, Mail, Lock, User, UserPlus, Phone, KeyRound, AlertTriangle, Users } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from "../superbaseClient";
 
 function AuthFormContent() {
