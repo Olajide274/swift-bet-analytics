@@ -151,7 +151,7 @@ function AuthFormContent() {
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Full Name</label>
               <div style={{ position: "relative", width: "100%" }}>
                 <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><User style={{ width: "16px", height: "16px" }} /></span>
-                <input type="text" required placeholder="Michael Olajide" value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+                <input type="text" required placeholder="eg. John Doe" value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
               </div>
             </div>
           )}
@@ -171,7 +171,7 @@ function AuthFormContent() {
               <label style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "#94A3B8" }}>Mobile Number</label>
               <div style={{ position: "relative", width: "100%" }}>
                 <span style={{ position: "absolute", left: "12px", top: "12px", color: "#64748B", display: "flex" }}><Phone style={{ width: "16px", height: "16px" }} /></span>
-                <input type="tel" required placeholder="+234 80 1234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
+                <input type="tel" required placeholder="eg. +234 80 1234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%", backgroundColor: "#0B0F19", border: "1px solid #334155", borderRadius: "12px", padding: "10px 12px 10px 38px", fontSize: "12px", color: "#FFFFFF", outline: "none", boxSizing: "border-box" }} />
               </div>
             </div>
           )}
@@ -255,7 +255,6 @@ function AuthFormContent() {
   );
 }
 
-// Complete crash-proof root wrapper utilizing Next.js strict compiler query boundaries
 export default function AuthPage() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#0B0F19", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", boxSizing: "border-box" }}>

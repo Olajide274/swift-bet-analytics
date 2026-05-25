@@ -11,34 +11,45 @@ export default function AdminInputForm() {
   const [prediction, setPrediction] = useState("");
   const [bookmaker, setBookmaker] = useState<"sportybet" | "bet9ja">("sportybet");
   const [bookingCode, setBookingCode] = useState("");
-  // NEW: State to toggle if the tip is premium/VIP or completely free
   const [isVIP, setIsVIP] = useState<boolean>(false);
+  // Track database loading state to prevent double-submitting
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // UPDATED: Now passing 'isVIP' along to satisfy our updated dataStore schema rules
-    addBettingTip({
-      fixture,
-      odds,
-      prediction,
-      bookmaker,
-      bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
-      isVIP: isVIP
-    });
+    if (isSubmitting) return;
 
-    alert(
-      `Successfully Published:\n${fixture} listed on ${
-        bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"
-      }\nTier Status: ${isVIP ? "👑 VIP Locked Paywall" : "🔓 Public Free Feed"}`
-    );
+    setIsSubmitting(true);
     
-    // Reset form inputs completely for the next tip entry
-    setFixture("");
-    setOdds("");
-    setPrediction("");
-    setBookingCode("");
-    setIsVIP(false); // Reset VIP toggle status safely
+    try {
+      // Safely await the database insertion loop
+      await addBettingTip({
+        fixture,
+        odds,
+        prediction,
+        bookmaker,
+        bookingCode: bookingCode.trim() || `SWIFT-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+        isVIP: isVIP
+      });
+
+      alert(
+        `Successfully Saved to Database:\n${fixture} listed on ${
+          bookmaker === "sportybet" ? "SportyBet" : "Bet9ja"
+        }\nTier Status: ${isVIP ? "👑 VIP Locked Paywall" : "🔓 Public Free Feed"}`
+      );
+      
+      // Reset form inputs completely for the next tip entry
+      setFixture("");
+      setOdds("");
+      setPrediction("");
+      setBookingCode("");
+      setIsVIP(false);
+    } catch (error) {
+      console.error(error);
+      alert("Database saving failed! Check your connection settings.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,7 +66,7 @@ export default function AdminInputForm() {
       <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-4 shadow-xl">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-            Match Fixture
+            Match Fixture / Ticket Name
           </label>
           <input
             type="text"
@@ -135,7 +146,7 @@ export default function AdminInputForm() {
           </div>
         </div>
 
-        {/* NEW: High-Yield Premium VIP Content Toggle Box */}
+        {/* High-Yield Premium VIP Content Toggle Box */}
         <div 
           onClick={() => setIsVIP(!isVIP)}
           className={`flex items-center justify-between p-3.5 rounded-xl border transition cursor-pointer select-none ${
@@ -158,9 +169,10 @@ export default function AdminInputForm() {
 
         <button
           type="submit"
-          className="w-full bg-cyan-500 text-slate-950 font-bold text-xs py-3 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 mt-2 cursor-pointer"
+          disabled={isSubmitting}
+          className="w-full bg-cyan-500 text-slate-950 font-bold text-xs py-3 rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5 mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <PlusCircle className="w-4 h-4" /> Publish Tip to Dashboard
+          <PlusCircle className="w-4 h-4" /> {isSubmitting ? "Connecting to Storage..." : "Publish Tip to Dashboard"}
         </button>
       </form>
     </main>
