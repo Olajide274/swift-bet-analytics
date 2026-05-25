@@ -206,6 +206,7 @@ function AuthFormContent() {
         checked={termsAccepted} 
         onChange={(e) => setTermsAccepted(e.target.checked)} 
         style={{ accentColor: "#06B6D4", cursor: "pointer" }} 
+        type="checkbox"
       /> 
       <span>
         I agree to the{" "}
