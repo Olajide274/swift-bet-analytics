@@ -36,6 +36,10 @@ function AuthFormContent() {
   }, [searchParams]);
 
   const handleInitialSubmit = async (e: React.FormEvent) => {
+    // 🔍 TEMPORARY DEBUGGER: Paste this at the start of handleInitialSubmit
+alert(`DEBUG INFO:\nURL Loaded: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? "YES" : "NO"}\nKey Loaded: ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "YES" : "NO"}`);
+console.log("Supabase Client Configuration Object:", supabase);
+
     e.preventDefault();
     if (loading) return;
     setLoading(true);
